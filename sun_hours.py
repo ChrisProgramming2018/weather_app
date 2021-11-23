@@ -44,7 +44,7 @@ sunhour_month_average = [ round(i/j,2) for i,j in zip(sunhour_month, days_month)
 print("daylight total month {} ".format(sunhour_month))
 print("daylight average per day for each month {} ".format(sunhour_month_average))
 
-rise = data_today[1].replace(',', ';')
+rise = data_today[1].replace(',', ':')
 start = data_today[1].replace(',',':')+ ":00"
 fall = data_today[2].replace('.',':')
 end = data_today[2].replace('.',':')+ ":00"
