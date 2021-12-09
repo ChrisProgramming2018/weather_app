@@ -27,15 +27,46 @@ class Weather_history():
         assert len(self.all_data) == len(self.years) 
         #print(self.all_data[0])
         self.data_of_all = []
-        for tyP in self.data_names:
+        for typ in self.data_names:
             tmp = {i:[] for i in range(366)}
             for y in range(len(self.years)):
-                for idx, day in enumerate(self.all_data[y]["tsun"]):
+                for idx, day in enumerate(self.all_data[y][typ]):
                     #print(day)
                     tmp[idx].append(day)
             self.data_of_all.append(tmp)
     def get_history(self, day, typ="sun"):
-        return self.data_of_all[0][self.map_day_to_number[(day.day, day.month)]]
+        idx = 0
+        if typ == "tsun":
+            idx=0
+        elif typ == "snow":
+            idx=1
+        elif typ == "tavg":
+            idx=2
+        elif typ == "tmin":
+            idx=3
+        else:
+            idx=4
+        print("typ {} use {} ".format(typ, idx))
+        return self.data_of_all[idx][self.map_day_to_number[(day.day, day.month)]]
+
+    def show_data(self, next_days):
+        today = date.today()
+        data = []
+        for d in range(next_days):
+            day =  today + datetime.timedelta(days=d) 
+            print(day)
+            day = self.map_day_to_number[(day.day, day.month)]
+            print(day)
+            for t in range(len(self.data_names)):
+                print(self.data_of_all[t][day])
+
+
+        return 
+        self.fig = plt.figure()
+        self.fig.set_figheight(6)
+        self.fig.set_figwidth(6)
+        self.ax_sim = plt.subplot2grid(shape=(4, 1), loc=(0,0), rowspan=1)
+        import pdb; pdb.set_trace()
 
 
 
@@ -44,4 +75,6 @@ if __name__ == "__main__":
     today = date.today()
     wh = Weather_history()
     wh.init_data()
-    print(wh.get_history(today))
+    for t in wh.data_names:
+        print(wh.get_history(today, t))
+    wh.show_data(7)
