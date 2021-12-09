@@ -5,7 +5,7 @@ from  datetime import date
 import calendar
 import os
 import numpy as np
-
+import matplotlib.pyplot as plt
 
 
 
@@ -34,6 +34,7 @@ class Weather_history():
                     #print(day)
                     tmp[idx].append(day)
             self.data_of_all.append(tmp)
+    
     def get_history(self, day, typ="sun"):
         idx = 0
         if typ == "tsun":
@@ -50,23 +51,49 @@ class Weather_history():
         return self.data_of_all[idx][self.map_day_to_number[(day.day, day.month)]]
 
     def show_data(self, next_days):
+        days_list = []
         today = date.today()
         data = []
         for d in range(next_days):
             day =  today + datetime.timedelta(days=d) 
+            days_list.append(day)
             print(day)
             day = self.map_day_to_number[(day.day, day.month)]
             print(day)
+            tmp = []
             for t in range(len(self.data_names)):
-                print(self.data_of_all[t][day])
-
-
-        return 
+                tmp.append(np.mean(self.data_of_all[t][day]))
+                #print(self.data_of_all[t][day])
+            data.append(tmp)
+        print(data)
+        sun_data = []
+        snow_data = []
+        min_t_data = []
+        max_t_data = []
+        avg_t_data = []
+        for d in data:
+            sun_data.append(d[0]/ 60)
+            snow_data.append(d[1])
+            avg_t_data.append(d[2])
+            min_t_data.append(d[3])
+            max_t_data.append(d[4])
+        
         self.fig = plt.figure()
         self.fig.set_figheight(6)
         self.fig.set_figwidth(6)
-        self.ax_sim = plt.subplot2grid(shape=(4, 1), loc=(0,0), rowspan=1)
-        import pdb; pdb.set_trace()
+        self.ax_tmp = plt.subplot2grid(shape=(2, 1), loc=(1,0), rowspan=1)
+        self.ax_w = plt.subplot2grid(shape=(2, 1), loc=(0,0), rowspan=1)
+        
+        self.ax_tmp.plot(days_list, avg_t_data, label="avg tmp", color="yellow")
+        self.ax_tmp.plot(days_list, min_t_data, label="avg min", color="blue")
+        self.ax_tmp.plot(days_list, max_t_data, label="avg max", color="red")
+        self.ax_tmp.legend()
+        self.ax_w.bar(days_list, sun_data, color="yellow", label="sunshine")
+        self.ax_w.bar(days_list, snow_data, color="white", label="snow")
+        self.ax_w.set_title("Sun and snow next 7 days")
+        self.ax_w.set_ylabel("hours")
+        plt.show()
+        return 
 
 
 
