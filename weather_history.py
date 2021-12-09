@@ -27,16 +27,15 @@ class Weather_history():
         assert len(self.all_data) == len(self.years) 
         #print(self.all_data[0])
         self.data_of_all = []
-        for y in range(len(self.years)):
-            print(y)
-            for tyP in self.data_names:
-
-            for idx, day in enumerate(self.all_data[y]["tsun"]):
-                #print(day)
-                self.all_sun_data[idx].append(day)
-
+        for tyP in self.data_names:
+            tmp = {i:[] for i in range(366)}
+            for y in range(len(self.years)):
+                for idx, day in enumerate(self.all_data[y]["tsun"]):
+                    #print(day)
+                    tmp[idx].append(day)
+            self.data_of_all.append(tmp)
     def get_history(self, day, typ="sun"):
-        return self.all_sun_data[self.map_day_to_number[(day.day, day.month)]]
+        return self.data_of_all[0][self.map_day_to_number[(day.day, day.month)]]
 
 
 
