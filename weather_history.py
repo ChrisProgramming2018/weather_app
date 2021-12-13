@@ -1,90 +1,107 @@
-from meteostat import Point, Daily, Stations, Hourly
-from datetime import datetime
-import matplotlib.pyplot as plt
-from geopy.geocoders import Nominatim
-from datetime import datetime
+# https://meteostat.net/en/place/3WV0MB?t=2013-01-01/2013-12-31 source of data
+import pandas as pd
+import datetime
+from  datetime import date
+import calendar
+import os
 import numpy as np
-
-def get_data(lat, longi, year, month, day):
-    start = datetime(year, month , day)
-    end = datetime(year, month, day)
-    # Get closest weather station
-    stations = Stations()
-    stations = stations.nearby(lat, longi)
-    stations = stations.inventory("daily", (start, end))
-    station = stations.fetch(1)
-    # Get daily data
-    data = Daily(station, start, end)
-    data = data.fetch()
-    return data
+import matplotlib.pyplot as plt
 
 
 
-geolocator = Nominatim(user_agent="weather")
-years = ["20{}".format(i) if i > 9 else "200{}".format(i)  for i in range(21)]
+class Weather_history():
+    def __init__(self, path="/home/programmer/Downloads", place="ettenheim"):
+        self.path = path
+        self.place = place
+        self.all_data = []
+        self.years = ["2016","2017","2018","2019","2020"]
+        self.data_names = ["tsun", "snow", "tavg", "tmin", "tmax"]
+        starting_day_of_current_year = datetime.datetime.now().date().replace(month=1, day=1)
+        self.list_of_days = [starting_day_of_current_year + datetime.timedelta(days=i) for i in range(365)]
+        self.map_day_to_number = {(day.day, day.month):idx for idx, day in enumerate(self.list_of_days)}
+        self.all_sun_data = {i:[] for i in range(366)}
 
-now = datetime.today()
-now.month, now.day
+    def init_data(self):
+        for year in self.years:
+            self.all_data.append(pd.read_csv(os.path.join(self.path, self.place + "_{}.csv".format(year))))
+        assert len(self.all_data) == len(self.years) 
+        #print(self.all_data[0])
+        self.data_of_all = []
+        for typ in self.data_names:
+            tmp = {i:[] for i in range(366)}
+            for y in range(len(self.years)):
+                for idx, day in enumerate(self.all_data[y][typ]):
+                    #print(day)
+                    tmp[idx].append(day)
+            self.data_of_all.append(tmp)
+    
+    def get_history(self, day, typ="sun"):
+        idx = 0
+        if typ == "tsun":
+            idx=0
+        elif typ == "snow":
+            idx=1
+        elif typ == "tavg":
+            idx=2
+        elif typ == "tmin":
+            idx=3
+        else:
+            idx=4
+        print("typ {} use {} ".format(typ, idx))
+        return self.data_of_all[idx][self.map_day_to_number[(day.day, day.month)]]
 
-location = geolocator.geocode("Freiburg")
-month = now.month
-day = now.day
-lat = location.latitude
-longi = location.longitude
-
-data_list = []
-for year in years:
-    data_list.append(get_data(lat, longi, int(year), month, day))
-
-
-sun_last_years = []
-for d in data_list:
-    sun_last_years.append(round(d["tsun"].to_numpy()[0] / 60))
-
-
-sun_last_years_pre = np.array(sun_last_years) / len(years)
-
-unique, counts = np.unique(sun_last_years, return_counts=True)
-sun_hours= [0 for i in range(18)]
-for h in range(18):
-    count = 0
-    for last in sun_last_years:
-        if last == h:
-            count += 1
-    sun_hours[h]= count
-
-sun_hours_per = np.round(np.array(sun_hours) / len(years), decimals=2 )
-
-hours = [i for i in range(18)]
-
-
-ax1 = plt.subplot(1,1,1)
-w = 0.3
-#plt.xticks(), will label the bars on x axis with the respective country names.
-#plt.xticks(x + w /2, datasort['country'], rotation='vertical')
-amount =ax1.bar(hours, sun_hours, color='b', align='center', alpha=0.1)
-#The trick is to use two different axes that share the same x axis, we have used ax1.twinx() method.
-ax2 = ax1.twinx()
-#We have calculated GDP by dividing gdpPerCapita to population.
-perc =ax2.bar(hours, sun_hours_per, color='g',align='center', alpha=0.8)
-#Set the Y axis label as GDP.
-plt.ylabel('percent')
-#To set the legend on the plot we have used plt.legend()
-plt.legend([amount, perc],['ocurrent last year', 'percent'])
-#To show the plot finally we have used plt.show().
-plt.show()
+    def show_data(self, next_days):
+        days_list = []
+        today = date.today()
+        data = []
+        for d in range(next_days):
+            day =  today + datetime.timedelta(days=d) 
+            days_list.append(day)
+            print(day)
+            day = self.map_day_to_number[(day.day, day.month)]
+            print(day)
+            tmp = []
+            for t in range(len(self.data_names)):
+                tmp.append(np.mean(self.data_of_all[t][day]))
+                #print(self.data_of_all[t][day])
+            data.append(tmp)
+        print(data)
+        sun_data = []
+        snow_data = []
+        min_t_data = []
+        max_t_data = []
+        avg_t_data = []
+        for d in data:
+            sun_data.append(d[0]/ 60)
+            snow_data.append(d[1])
+            avg_t_data.append(d[2])
+            min_t_data.append(d[3])
+            max_t_data.append(d[4])
+        
+        self.fig = plt.figure()
+        self.fig.set_figheight(6)
+        self.fig.set_figwidth(6)
+        self.ax_tmp = plt.subplot2grid(shape=(2, 1), loc=(1,0), rowspan=1)
+        self.ax_w = plt.subplot2grid(shape=(2, 1), loc=(0,0), rowspan=1)
+        
+        self.ax_tmp.plot(days_list, avg_t_data, label="avg tmp", color="yellow")
+        self.ax_tmp.plot(days_list, min_t_data, label="avg min", color="blue")
+        self.ax_tmp.plot(days_list, max_t_data, label="avg max", color="red")
+        self.ax_tmp.legend()
+        self.ax_w.bar(days_list, sun_data, color="yellow", label="sunshine")
+        self.ax_w.bar(days_list, snow_data, color="white", label="snow")
+        self.ax_w.set_title("Sun and snow next 7 days")
+        self.ax_w.set_ylabel("hours")
+        plt.show()
+        return 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    today = date.today()
+    wh = Weather_history()
+    wh.init_data()
+    for t in wh.data_names:
+        print(wh.get_history(today, t))
+    wh.show_data(7)
