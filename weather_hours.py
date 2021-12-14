@@ -32,12 +32,12 @@ def create_frq(x_hours, last_years):
 geolocator = Nominatim(user_agent="weather")
 years = ["20{}".format(i) if i > 9 else "200{}".format(i)  for i in range(21)]
 
-now = datetime.today()
-now.month, now.day
+today = datetime.today()
 
-location = geolocator.geocode("Freiburg")
-month = now.month
-day = now.day
+place = "Freiburg"
+location = geolocator.geocode(place)
+month = today.month
+day = today.day
 lat = location.latitude
 longi = location.longitude
 
@@ -101,6 +101,7 @@ hours_m = [i for i in range(min_m, max_m)]
 
 
 fig = plt.figure()
+fig.suptitle('Weather {} at {}'.format(place, today.strftime("%m/%d/%Y, %H:%M:%S")), fontsize=20)
 fig.set_figheight(6)
 fig.set_figwidth(6)
 rows = 5
