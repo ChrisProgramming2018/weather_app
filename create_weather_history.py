@@ -10,6 +10,9 @@ from data_weather import Weather_data
 
 
 def main():
+    
+    today = date.today()
+    day = today.strftime("%Y-%m-%d")
     place= "Ettenheim"
     year = today.year
     month = today.month
@@ -24,8 +27,7 @@ def main():
     if os.path.exists(path):
         print("data already there")
         sys.exit()
-    today = date.today()
-    day = today.strftime("%Y-%m-%d")
+    ws = Weather_data()
     days = 16
     days_list = [(datetime.datetime.today() + datetime.timedelta(days=i)).strftime("%Y-%m-%d") for i in range(days)]
     sol_dict = {}
@@ -42,3 +44,7 @@ def main():
     data = pd.DataFrame(sol_dict)
     data.set_axis(days_list[:-1])
     data.to_csv(path)
+
+
+if __name__ == "__main__":
+    main()
