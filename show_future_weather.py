@@ -44,18 +44,23 @@ for k in data.keys():
             for key in dict_m.keys():
                 dict_m[key].append(d)
     all_data.append(dict_m)
-print(all_data)
+#print(all_data)
 x_values_l = []
 data_max_l = []
+key_list = []
 for data in all_data:
     for key in data.keys():
+        key_list.append(key)
         data_max = len(data[key])
         data_max_l.append(data[key])
         x_values_l.append([(key + datetime.timedelta(days=i)).strftime("%d") for i in range(data_max)])
 
+print(key_list)
 
-for x_values, data_max in zip(x_values_l, data_max_l):
-    plt.plot(x_values, data_max, label="max temp")
+
+
+for x_values, data_max, key in zip(reversed(x_values_l), reversed(data_max_l), reversed(key_list)):
+    plt.plot(x_values, data_max, label="{}".format(key.strftime("%Y-%m-%d")))
 plt.ylabel("temp °C")
 plt.xlabel("day")
 plt.legend()
