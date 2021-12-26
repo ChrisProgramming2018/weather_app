@@ -1,8 +1,9 @@
+import numpy as np
 import pandas as pd
 from  datetime import date
 import datetime
 import matplotlib.pyplot as plt
-
+import itertools
 
 
 today = date.today()
@@ -36,9 +37,11 @@ for day in days_list_detail:
 
 kw = ["temperatureMax","temperatureMin", "sunhours", "precipitation"]
 
+print(data.keys())
+#import pdb; pdb.set_trace()
 all_data = []
 for k in data.keys():
-    for i in range(len(data.keys())):
+    for i in range(len(kw)):
         print(kw[i])
         dict_m = {(datetime.datetime.strptime(k, '%Y-%m-%d'), kw[i]):[]}
         for idx, d in enumerate(data[k][kw[i]]):
@@ -68,12 +71,10 @@ for data in all_data:
         if key[1] == kw[3]:
             data_rain_l.append(data[key])
 
-print(key_list)
-#import pdb; pdb.set_trace()
 
 fig = plt.figure()
-fig.set_figheight(6)
-fig.set_figwidth(6)
+fig.set_figheight(15)
+fig.set_figwidth(15)
 rows = 4
 col = 1
         
@@ -82,21 +83,58 @@ ax_r = plt.subplot2grid(shape=(rows, col), loc=(1, 0), rowspan=1, sharex=ax_sun)
 ax_tmax = plt.subplot2grid(shape=(rows, col), loc=(2, 0), rowspan=1, sharex=ax_sun)
 ax_tmin = plt.subplot2grid(shape=(rows, col), loc=(3, 0), rowspan=1, sharex=ax_sun)
 
+ax_sun.set_title(kw[2])
+ax_r.set_title(kw[3])
+ax_tmax.set_title(kw[0])
+ax_tmin.set_title(kw[1])
+
+# not so simple need to overlap
+mean_tmax = np.mean(np.array(data_tmax_l), axis=0)
+mean_tmin = np.mean(np.array(data_tmin_l), axis=0)
+mean_rain = np.mean(np.array(data_rain_l), axis=0)
+mean_sunh = np.mean(np.array(data_sunh_l), axis=0)
+
+
+
 
 
 for x_values, data_max, key in zip(reversed(x_values_l), reversed(data_tmax_l), reversed(key_list)):
-    ax_tmax.plot(x_values, data_max, label="{}".format(key.strftime("%Y-%m-%d")))
+    #import pdb; pdb.set_trace()
+    line_width = 1.0
+    if today.strftime("%Y-%m-%d") == key.strftime("%Y-%m-%d"):
+        line_width = 5.0
+        ax_tmax.plot(x_values, data_max, linewidth=line_width, color="r", label="{}".format(key.strftime("%Y-%m-%d")))
+        continue
+    ax_tmax.plot(x_values, data_max, linewidth=line_width, label="{}".format(key.strftime("%Y-%m-%d")))
 
+# ax_tmax.plot(mean_tmax, data_max, label="mean", linestyle='--', color="r")
 for x_values, data_max, key in zip(reversed(x_values_l), reversed(data_sunh_l), reversed(key_list)):
-    ax_sun.plot(x_values, data_max, label="{}".format(key.strftime("%Y-%m-%d")))
+    #import pdb; pdb.set_trace()
+    line_width = 1.0
+    if today.strftime("%Y-%m-%d") == key.strftime("%Y-%m-%d"):
+        line_width = 5.0
+        ax_sun.plot(x_values, data_max, linewidth=line_width, color="r", label="{}".format(key.strftime("%Y-%m-%d")))
+        continue
+    ax_sun.plot(x_values, data_max, linewidth=line_width, label="{}".format(key.strftime("%Y-%m-%d")))
 
 for x_values, data_max, key in zip(reversed(x_values_l), reversed(data_tmin_l), reversed(key_list)):
-    ax_tmin.plot(x_values, data_max, label="{}".format(key.strftime("%Y-%m-%d")))
+    line_width = 1.0
+    if today.strftime("%Y-%m-%d") == key.strftime("%Y-%m-%d"):
+        line_width = 5.0
+        ax_tmin.plot(x_values, data_max, linewidth=line_width, color="r", label="{}".format(key.strftime("%Y-%m-%d")))
+        continue
+    ax_tmin.plot(x_values, data_max, linewidth=line_width, label="{}".format(key.strftime("%Y-%m-%d")))
 
 for x_values, data_max, key in zip(reversed(x_values_l), reversed(data_rain_l), reversed(key_list)):
-    ax_r.plot(x_values, data_max, label="{}".format(key.strftime("%Y-%m-%d")))
+    line_width = 1.0
+    if today.strftime("%Y-%m-%d") == key.strftime("%Y-%m-%d"):
+        line_width = 5.0
+        ax_r.plot(x_values, data_max, linewidth=line_width, color="r", label="{}".format(key.strftime("%Y-%m-%d")))
+        continue
+    ax_r.plot(x_values, data_max, linewidth=line_width, label="{}".format(key.strftime("%Y-%m-%d")))
 
-#plt.ylabel("temp °C")
-#plt.xlabel("day")
-#plt.legend()
+#import pdb; pdb.set_trace()
+plt.ylabel("temp °C")
+plt.xlabel("day")
+plt.legend()
 plt.show()
