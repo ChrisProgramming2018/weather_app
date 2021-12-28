@@ -48,6 +48,20 @@ def create_mean(days_ordered, data, kw):
                     day = (key[0] + datetime.timedelta(days=i)).strftime("%d.%m.%Y")
                     d = data[key][i]
                     data_as_list.append((day, metric, d))
+            if key[1] == kw[2]:
+                metric= key[1]
+                data_max = len(data[key])
+                for i in range(data_max):
+                    day = (key[0] + datetime.timedelta(days=i)).strftime("%d.%m.%Y")
+                    d = data[key][i]
+                    data_as_list.append((day, metric, d))
+            if key[1] == kw[3]:
+                metric= key[1]
+                data_max = len(data[key])
+                for i in range(data_max):
+                    day = (key[0] + datetime.timedelta(days=i)).strftime("%d.%m.%Y")
+                    d = data[key][i]
+                    data_as_list.append((day, metric, d))
 
 
 
@@ -56,28 +70,40 @@ def create_mean(days_ordered, data, kw):
     mean_sunh = []
     mean_rain = []
     for day in days_ordered:
-        tmp= []
-        tmp1= []
+        tmp,tmp1, tmp2, tmp3 = [], [], [], []
         for data in data_as_list:
             #import pdb; pdb.set_trace()
             if data[0] == day and data[1] == kw[0]:
                 tmp.append(data[2])
             if data[0] == day and data[1] == kw[1]:
                 tmp1.append(data[2])
+            if data[0] == day and data[1] == kw[2]:
+                tmp2.append(data[2])
+            if data[0] == day and data[1] == kw[3]:
+                tmp3.append(data[2])
+        
         mean_tmax.append(tmp)
         mean_tmin.append(tmp1)
+        mean_sunh.append(tmp2)
+        mean_rain.append(tmp3)
 
     mean_tmax_1 = []
     mean_tmin_1 = []
     mean_sunh_1 = []
     mean_rain_1 = []
-    for idx, idx1 in zip(mean_tmax, mean_tmin):
+    for idx, idx1, idx2, idx3 in zip(mean_tmax, mean_tmin, mean_sunh, mean_rain):
         if len(idx) < 1:
             continue
         mean_tmax_1.append(np.mean(np.array(idx)))
         if len(idx1) < 1:
             continue
         mean_tmin_1.append(np.mean(np.array(idx1)))
+        if len(idx2) < 1:
+            continue
+        mean_sunh_1.append(np.mean(np.array(idx2)))
+        if len(idx3) < 1:
+            continue
+        mean_rain_1.append(np.mean(np.array(idx3)))
 
     return mean_tmax_1, mean_tmin_1, mean_sunh_1, mean_rain_1
 today = date.today()
@@ -216,7 +242,6 @@ for x_values, data_max, key in zip(reversed(x_values_l), reversed(data_tmax_l), 
 
 
 #import pdb; pdb.set_trace()
-print(x_values_mean)
 ax_tmax.plot(x_values_mean, mean_tmax, linestyle="--",  linewidth=5, color="b", label="mean")
 
 # ax_tmax.plot(mean_tmax, data_max, label="mean", linestyle='--', color="r")
@@ -229,6 +254,8 @@ for x_values, data_max, key in zip(reversed(x_values_l), reversed(data_sunh_l), 
         continue
     ax_sun.plot(x_values, data_max, linewidth=line_width, label="{}".format(key.strftime("%Y-%m-%d")))
 
+ax_sun.plot(x_values_mean, mean_sunh, linestyle="--",  linewidth=5, color="b", label="mean")
+
 for x_values, data_max, key in zip(reversed(x_values_l), reversed(data_tmin_l), reversed(key_list)):
     line_width = 1.0
     if today.strftime("%Y-%m-%d") == key.strftime("%Y-%m-%d"):
@@ -237,6 +264,8 @@ for x_values, data_max, key in zip(reversed(x_values_l), reversed(data_tmin_l), 
         continue
     ax_tmin.plot(x_values, data_max, linewidth=line_width, label="{}".format(key.strftime("%Y-%m-%d")))
 
+ax_tmin.plot(x_values_mean, mean_tmin, linestyle="--",  linewidth=5, color="b", label="mean")
+
 for x_values, data_max, key in zip(reversed(x_values_l), reversed(data_rain_l), reversed(key_list)):
     line_width = 1.0
     if today.strftime("%Y-%m-%d") == key.strftime("%Y-%m-%d"):
@@ -244,6 +273,8 @@ for x_values, data_max, key in zip(reversed(x_values_l), reversed(data_rain_l), 
         ax_r.plot(x_values, data_max, linewidth=line_width, color="r", label="{}".format(key.strftime("%Y-%m-%d")))
         continue
     ax_r.plot(x_values, data_max, linewidth=line_width, label="{}".format(key.strftime("%Y-%m-%d")))
+
+ax_r.plot(x_values_mean, mean_rain, linestyle="--",  linewidth=5, color="b", label="mean")
 
 #import pdb; pdb.set_trace()
 plt.ylabel("temp °C")
