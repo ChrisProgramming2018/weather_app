@@ -6,6 +6,80 @@ import matplotlib.pyplot as plt
 import itertools
 
 
+
+
+
+def create_mean(days_ordered, data, kw):
+    all_data = []
+    for k in data.keys():
+        for i in range(len(kw)):
+            print(k)
+            dict_m = {(datetime.datetime.strptime(k, '%d.%m.%Y'), kw[i]):[]}
+            for idx, d in enumerate(data[k][kw[i]]):
+                for key in dict_m.keys():
+                    dict_m[key].append(d)
+            all_data.append(dict_m)
+    print(days_ordered)
+    data_as_list =[]
+    x_values_l = []
+    data_tmin_l = []
+    data_sunh_l = []
+    data_rain_l = []
+    data_tmax_l = []
+    key_list = []
+    all_days = []
+    for data in all_data:
+        for key in data.keys():
+            if key[1] == kw[0]:
+                metric= key[1]
+                key_list.append(key[0])
+                data_max = len(data[key])
+                data_tmax_l.append(data[key])
+                x_values_l.append([(key[0] + datetime.timedelta(days=i)).strftime("%d") for i in range(data_max)])
+                all_days.append([(key[0] + datetime.timedelta(days=i)).strftime("%d.%m.%Y") for i in range(data_max)])
+                for i in range(data_max):
+                    day = (key[0] + datetime.timedelta(days=i)).strftime("%d.%m.%Y")
+                    d = data[key][i]
+                    data_as_list.append((day, metric, d))
+            if key[1] == kw[1]:
+                metric= key[1]
+                data_max = len(data[key])
+                for i in range(data_max):
+                    day = (key[0] + datetime.timedelta(days=i)).strftime("%d.%m.%Y")
+                    d = data[key][i]
+                    data_as_list.append((day, metric, d))
+
+
+
+    mean_tmax = []
+    mean_tmin = []
+    mean_sunh = []
+    mean_rain = []
+    for day in days_ordered:
+        tmp= []
+        tmp1= []
+        for data in data_as_list:
+            #import pdb; pdb.set_trace()
+            if data[0] == day and data[1] == kw[0]:
+                tmp.append(data[2])
+            if data[0] == day and data[1] == kw[1]:
+                tmp1.append(data[2])
+        mean_tmax.append(tmp)
+        mean_tmin.append(tmp1)
+
+    mean_tmax_1 = []
+    mean_tmin_1 = []
+    mean_sunh_1 = []
+    mean_rain_1 = []
+    for idx, idx1 in zip(mean_tmax, mean_tmin):
+        if len(idx) < 1:
+            continue
+        mean_tmax_1.append(np.mean(np.array(idx)))
+        if len(idx1) < 1:
+            continue
+        mean_tmin_1.append(np.mean(np.array(idx1)))
+
+    return mean_tmax_1, mean_tmin_1, mean_sunh_1, mean_rain_1
 today = date.today()
 day = today.strftime("%Y-%m-%d")
 place= "Ettenheim"
@@ -17,6 +91,8 @@ path = "weather_data/{}/{}/{}/".format(place, year, month)
 
 days = 16
 days_list_detail = []
+days_ordered = []
+
 for i in range(days):
     day = (datetime.datetime.today() - datetime.timedelta(days=i))
     days_list_detail.append((day.year, day.month, day.day))
@@ -29,33 +105,59 @@ for day in days_list_detail:
     d= day[2]
     path = "weather_data/{}/{}/{}/{}.txt".format(place, y, m,d)
     try:
-        data.update({"{}-{}-{}".format(y,m,d):pd.read_csv(path)})
+        data.update({"{}.{}.{}".format(d,m,y):pd.read_csv(path)})
+    except:
+        print("Error data not found", path)
+        continue
+
+for day in reversed(days_list_detail):
+    y = day[0]
+    m= day[1]
+    d= day[2]
+    path = "weather_data/{}/{}/{}/{}.txt".format(place, y, m,d)
+    try:
+        pd.read_csv(path)
+        days_ordered.append("{}.{}.{}".format(d,m,y))
     except:
         print("Error data not found", path)
         continue
 
 
+
+
+
+
+for i in range(1, days-1):
+    days_ordered.append((datetime.datetime.today() + datetime.timedelta(days=i)).strftime("%d.%m.%Y"))
+
 kw = ["temperatureMax","temperatureMin", "sunhours", "precipitation"]
 
-print(data.keys())
+mean_tmax, mean_tmin, mean_sunh, mean_rain = create_mean(days_ordered, data, kw)
+
+
 #import pdb; pdb.set_trace()
+
+
+print(data.keys())
 all_data = []
 for k in data.keys():
     for i in range(len(kw)):
         print(kw[i])
-        dict_m = {(datetime.datetime.strptime(k, '%Y-%m-%d'), kw[i]):[]}
+        #dict_m = {(datetime.datetime.strptime(k, '%Y-%m-%d'), kw[i]):[]}
+        dict_m = {(datetime.datetime.strptime(k, '%d.%m.%Y'), kw[i]):[]}
         for idx, d in enumerate(data[k][kw[i]]):
             for key in dict_m.keys():
                 dict_m[key].append(d)
         all_data.append(dict_m)
 #print(all_data)
-
+print(days_ordered)
 x_values_l = []
 data_tmin_l = []
 data_sunh_l = []
 data_rain_l = []
 data_tmax_l = []
 key_list = []
+all_days = {}
 for data in all_data:
     for key in data.keys():
         #print(data[key])
@@ -64,12 +166,16 @@ for data in all_data:
             data_max = len(data[key])
             data_tmax_l.append(data[key])
             x_values_l.append([(key[0] + datetime.timedelta(days=i)).strftime("%d") for i in range(data_max)])
+
         if key[1] == kw[1]:
             data_tmin_l.append(data[key])
         if key[1] == kw[2]:
             data_sunh_l.append(data[key])
         if key[1] == kw[3]:
             data_rain_l.append(data[key])
+
+
+
 
 
 fig = plt.figure()
@@ -89,12 +195,13 @@ ax_tmax.set_title(kw[0])
 ax_tmin.set_title(kw[1])
 
 # not so simple need to overlap
-mean_tmax = np.mean(np.array(data_tmax_l), axis=0)
-mean_tmin = np.mean(np.array(data_tmin_l), axis=0)
-mean_rain = np.mean(np.array(data_rain_l), axis=0)
-mean_sunh = np.mean(np.array(data_sunh_l), axis=0)
+#mean_tmax = np.mean(np.array(data_tmax_l), axis=0)
 
+x_values_mean =[]
 
+for do in days_ordered:
+    x_values_mean.append(do[:2])
+#import pdb; pdb.set_trace()
 
 
 
@@ -106,6 +213,11 @@ for x_values, data_max, key in zip(reversed(x_values_l), reversed(data_tmax_l), 
         ax_tmax.plot(x_values, data_max, linewidth=line_width, color="r", label="{}".format(key.strftime("%Y-%m-%d")))
         continue
     ax_tmax.plot(x_values, data_max, linewidth=line_width, label="{}".format(key.strftime("%Y-%m-%d")))
+
+
+#import pdb; pdb.set_trace()
+print(x_values_mean)
+ax_tmax.plot(x_values_mean, mean_tmax, linestyle="--",  linewidth=5, color="b", label="mean")
 
 # ax_tmax.plot(mean_tmax, data_max, label="mean", linestyle='--', color="r")
 for x_values, data_max, key in zip(reversed(x_values_l), reversed(data_sunh_l), reversed(key_list)):
