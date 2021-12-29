@@ -3,17 +3,17 @@ from  datetime import date
 import os
 import sys
 import pandas as pd
-
+import argparse
 from data_weather import Weather_data
 
 
 
 
-def main():
-    
+def main(args):
+    """ """
     today = date.today()
     day = today.strftime("%Y-%m-%d")
-    place= "Ettenheim"
+    place= args.place
     year = today.year
     month = today.month
     day = today.day
@@ -47,4 +47,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--place', type=str, default="Ettenheim", help="Verbania"),
+    args = parser.parse_args()
+    main(args)
