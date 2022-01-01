@@ -130,8 +130,8 @@ def main(args):
     data = {}
     for day in days_list_detail:
         y = day[0]
-        m= day[1]
-        d= day[2]
+        m= str(day[1]).zfill(2)
+        d= str(day[2]).zfill(2)
         path = "weather_data/{}/{}/{}/{}.txt".format(place, y, m,d)
         try:
             data.update({"{}.{}.{}".format(d,m,y):pd.read_csv(path)})
@@ -141,8 +141,8 @@ def main(args):
 
     for day in reversed(days_list_detail):
         y = day[0]
-        m= day[1]
-        d= day[2]
+        m= str(day[1]).zfill(2)
+        d= str(day[2]).zfill(2)
         path = "weather_data/{}/{}/{}/{}.txt".format(place, y, m,d)
         try:
             pd.read_csv(path)
@@ -179,7 +179,7 @@ def main(args):
                     dict_m[key].append(d)
             all_data.append(dict_m)
     #print(all_data)
-    print(days_ordered)
+    print("days orderd ", days_ordered)
     x_values_l = []
     data_tmin_l = []
     data_sunh_l = []
@@ -228,6 +228,7 @@ def main(args):
 
     x_values_mean =[]
 
+    #import pdb; pdb.set_trace()
     for do in days_ordered:
         x_values_mean.append(do[:2])
     #import pdb; pdb.set_trace()
@@ -245,6 +246,7 @@ def main(args):
 
 
     #import pdb; pdb.set_trace()
+    # x_values_mean = x_values_mean[:-1]
     ax_tmax.plot(x_values_mean, mean_tmax, linestyle="--",  linewidth=5, color="b", label="mean")
 
     # ax_tmax.plot(mean_tmax, data_max, label="mean", linestyle='--', color="r")

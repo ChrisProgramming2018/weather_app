@@ -15,8 +15,8 @@ def main(args):
     day = today.strftime("%Y-%m-%d")
     place= args.place
     year = today.year
-    month = today.month
-    day = today.day
+    month = str(today.month).zfill(2)
+    day = str(today.day).zfill(2)
     path = "weather_data/{}/{}/{}/{}.txt".format(place, year, month, day)
     directory = "weather_data/{}/{}/{}".format(place, year, month)
     try:
@@ -27,7 +27,15 @@ def main(args):
     if os.path.exists(path):
         print("data already there")
         sys.exit()
-    ws = Weather_data()
+    if place == "Ettenheim":
+        ws = Weather_data()
+    if place == "gran":
+        url = "https://www.wetter.com/wetter_aktuell/wettervorhersage/16_tagesvorhersage/spanien/las-galletas/ES2515381.html"
+        ws = Weather_data(url)
+    if place == "Verbania":
+        url = "https://www.wetter.com/wetter_aktuell/wettervorhersage/16_tagesvorhersage/italien/verbania/IT0PI0425.html"
+        ws = Weather_data(url)
+
     days = 16
     days_list = [(datetime.datetime.today() + datetime.timedelta(days=i)).strftime("%Y-%m-%d") for i in range(days)]
     sol_dict = {}
